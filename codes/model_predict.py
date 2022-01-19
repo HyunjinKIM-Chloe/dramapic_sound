@@ -27,8 +27,8 @@ class Preprocessing(fd.MakeFreqDataset):
         self.IP = conf['address']
         self.label_ls = ["human", "human_voice", "life", "nature", "song"]
         self.videos_df = sql.read_db('videos')
-        [self.mp4_to_wav(v_id) for v_id in self.videos_df['id'].tolist()]  # mp4 동영상 에서 wav 음원 추출
-        [self.cut_song_by_msec(v_id) for v_id in self.videos_df['id'].tolist()]  # wav 음원을 0.1초 단위로 잘라 재저장
+        #[self.mp4_to_wav(v_id) for v_id in self.videos_df['id'].tolist()]  # mp4 동영상 에서 wav 음원 추출
+        #[self.cut_song_by_msec(v_id) for v_id in self.videos_df['id'].tolist()]  # wav 음원을 0.1초 단위로 잘라 재저장
 
     def mp4_to_wav(self, video_id):
         wav_name_ls = [os.path.basename(f).split('.')[0] for f in glob.glob(f'{self.wav_from_video_path}*') if
