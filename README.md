@@ -27,8 +27,9 @@
   ## How to run
   ### init_sound_features.py
   - Calculate frequencies of sounds
-  - For the first time running code, wav files will be stored in `sound_files/`dirs automatically
+  - Wav files will be stored in `sound_files/`dirs automatically
   - Insert data into DB "sound_features" after calculating
+  - Temporal wav files will be deleted after running
   #### 1. A total video
   ```
   python init_sound_features.py {video_id}
