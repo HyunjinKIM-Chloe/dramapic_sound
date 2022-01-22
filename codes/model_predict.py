@@ -1,14 +1,12 @@
 import freq_dataset as fd
 import access_db as db
 import pandas as pd
-import numpy as np
 import os
 import glob
 import joblib
 import subprocess
 from pydub import AudioSegment
 import yaml
-from tqdm import tqdm
 import warnings
 warnings.simplefilter("ignore")
 sql = db.Query()
@@ -27,8 +25,6 @@ class Preprocessing(fd.MakeFreqDataset):
         self.IP = conf['address']
         self.label_ls = ["human", "human_voice", "life", "nature", "song"]
         self.videos_df = sql.read_db('videos')
-        #[self.mp4_to_wav(v_id) for v_id in self.videos_df['id'].tolist()]  # mp4 동영상 에서 wav 음원 추출
-        #[self.cut_song_by_msec(v_id) for v_id in self.videos_df['id'].tolist()]  # wav 음원을 0.1초 단위로 잘라 재저장
 
     def mp4_to_wav(self, video_id):
         wav_name_ls = [os.path.basename(f).split('.')[0] for f in glob.glob(f'{self.wav_from_video_path}*') if
@@ -145,7 +141,7 @@ class ModelPredict(Preprocessing):
         print(f"총 {len(val_df)}건의 데이터를 가져왔습니다.")
 
         final_result = pd.DataFrame()
-        for idx in tqdm(range(len(val_df))):
+        for idx in self.progressbar(range(len(val_df)), "Model prediction: "):
             freq_df = val_df.iloc[[idx]]
             proba_ls = []
             pred_label = []
@@ -169,9 +165,6 @@ class ModelPredict(Preprocessing):
         result_df = result_df.drop(['end'], axis=1)
         result_df.set_index('start', drop=True, inplace=True)
         pct_df = result_df.groupby(['video_id', 'start']).sum() / len(self.model_ls)
-        # for name, item in pct_df.iterrows():
-        #     print(f"'{name}' 은 {round(max(item), 2) * 100}% 의 확률로"
-        #           f" {item.index[item.tolist().index(max(item))]}로 추정 됩니다.")
         human_pct = (pct_df * 100).iloc[:, :2].sum(axis=1)
         pct = pd.DataFrame(human_pct, columns=['human'])
         pct.reset_index(inplace=True)

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import librosa
-from tqdm import tqdm
+import sys
 
 
 class Preprocessing():
@@ -13,6 +13,21 @@ class Preprocessing():
     def read_file(self, url):
         y, sr = librosa.load(url)
         return y, sr
+
+    def progressbar(self, rows, prefix="", size=60, file=sys.stdout):
+        count = len(rows)
+
+        def show(j):
+            x = int(size * j / count)
+            file.write("%s[%s%s] %i/%i\r" % (prefix, "#" * x, "." * (size - x), j, count))
+            file.flush()
+
+        show(0)
+        for i, item in enumerate(rows):
+            yield item
+            show(i + 1)
+        file.write("\n")
+        file.flush()
 
     def calc_duration(self, path, y, sr):
         try:
@@ -147,8 +162,8 @@ class MakeFreqDataset(Preprocessing):
         ls_mfcc20_var = []
         ls_duration = []
 
-        # tracks_df = self.read_db('tracks')
-        for url in tqdm(tracks_df['path'].tolist()[start:end]):
+        target_path = tracks_df['path'].tolist()[start:end]
+        for url in self.progressbar(target_path, "Sound Frequency: "):
             y, sr = self.read_file(url)
             duration = self.calc_duration(url, y, sr)
             chroma_stft_mean, chroma_stft_var = self.make_chroma(y, sr)
